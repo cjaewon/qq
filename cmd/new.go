@@ -11,19 +11,22 @@ import (
 
 var (
 	defaultMarkDownFormat = heredoc.Doc(`
-        ​---
+        ---
         title: "%s"
         date: %s
         description: "%s"
-        ​---
+        ---
     `)
 	title, description string
 
 	newCmd = &cobra.Command{
 		Use:   "new <filename>",
 		Short: "Create a markdown file based on a specific format.",
-		Long:  "",
-		Args:  cobra.ExactArgs(1),
+		Long: heredoc.Doc(`
+			Create a markdown file based on specific format.
+			Specific format :
+		`) + defaultMarkDownFormat, // todo: add it
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			filename := args[0]
 
