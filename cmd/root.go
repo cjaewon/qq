@@ -24,6 +24,7 @@ var (
 
 func init() {
 	rootCmd.AddCommand(newCmd)
+	rootCmd.AddCommand(serverCmd)
 }
 
 func Execute() error {
