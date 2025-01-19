@@ -17,7 +17,7 @@ var (
         description: "%s"
         ---
     `)
-	newCmdTitle, newCmdDescription string
+	title, description string
 
 	newCmd = &cobra.Command{
 		Use:   "new <filename>",
@@ -39,19 +39,19 @@ var (
 
 			defer file.Close()
 
-			if newCmdTitle == "" {
+			if title == "" {
 				fmt.Print("title: ")
-				fmt.Scanln(&newCmdTitle)
+				fmt.Scanln(&title)
 			}
 
-			if newCmdDescription == "" {
+			if description == "" {
 				fmt.Print("description: ")
-				fmt.Scanln(&newCmdDescription)
+				fmt.Scanln(&description)
 			}
 
 			now := time.Now().Format(time.RFC3339)
 
-			if _, err := file.WriteString(fmt.Sprintf(defaultMarkDownFormat, newCmdTitle, now, newCmdDescription)); err != nil {
+			if _, err := file.WriteString(fmt.Sprintf(defaultMarkDownFormat, title, now, description)); err != nil {
 				return err
 			}
 
@@ -61,6 +61,6 @@ var (
 )
 
 func init() {
-	newCmd.Flags().StringVarP(&newCmdTitle, "title", "t", "", "title (if not provided, qq will prompt the user for it)")
-	newCmd.Flags().StringVarP(&newCmdDescription, "description", "d", "", "description (if not provided, qq will prompt the user for it)")
+	newCmd.Flags().StringVarP(&title, "title", "t", "", "title (if not provided, qq will prompt the user for it)")
+	newCmd.Flags().StringVarP(&description, "description", "d", "", "description (if not provided, qq will prompt the user for it)")
 }
