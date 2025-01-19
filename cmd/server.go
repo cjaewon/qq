@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-	"net/http"
-	"strconv"
-
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/cjaewon/qq/server"
 	"github.com/spf13/cobra"
 )
 
@@ -21,25 +18,19 @@ var (
             It includes a renderer for certain file extensions (e.g., markdown files, image files, etc.).
         `),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// fmt.Println(contentPath)
-			// if len(args) > 1 {
-			// 	contentPath = args[0]
-			// }
+			contentRootPath := "."
 
-			http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-				fmt.Printf("Request URL: %s\n", r.URL.Path)
-
-				// 응답 전송
-				fmt.Fprintf(w, "You accessed %s", r.URL.Path)
-			})
-
-			fmt.Println("http server started on :" + strconv.Itoa(serverPort))
-
-			if err := http.ListenAndServe(":"+strconv.Itoa(serverPort), nil); err != nil {
-				return err
+			if len(args) > 1 {
+				contentRootPath = args[0]
 			}
 
-			return nil
+			s := server.Server{
+				Port:            serverPort,
+				Watch:           serverWatch,
+				ContentRootPath: contentRootPath,
+			}
+
+			return s.Start()
 		},
 	}
 )
