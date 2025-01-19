@@ -16,7 +16,8 @@ var (
 )
 
 func init() {
-	b, err := web.ReadFile("./html/dir.html")
+
+	b, err := web.ReadFile("web/html/dir.html")
 	if err != nil {
 		panic(err)
 	}
