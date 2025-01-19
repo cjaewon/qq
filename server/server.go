@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -31,9 +32,19 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		var files []fs.FileInfo
+
 		for _, entry := range entries {
-			fmt.Fprint(w, entry.Name()+"<br/>")
+			f, err := entry.Info()
+			if err != nil {
+				fmt.Print(err)
+				return
+			}
+
+			files = append(files, f)
 		}
+
+		writeDirHTML(w, files)
 	} else {
 		// file
 		fmt.Fprintf(w, "%s is file", r.URL.Path)

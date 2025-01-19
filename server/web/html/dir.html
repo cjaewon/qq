@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="../styles/common.css">
+  <link rel="stylesheet" href="../styles/dir.css">
+</head>
+<body>
+  <main class="table-container">
+    <table class="table">
+      <tobdy>
+        <tr class="table-row">
+          <td class="table-navigation" colspan="3">
+            cmd / html / Desktop
+          </td>
+        </tr>
+        <tr class="table-row">
+          <th scope="col" class="table-cell">이름</th>
+          <th scope="col" class="table-cell">설명</th>
+          <th scope="col" class="table-cell">날짜</th>
+        </tr>
+        {{ range . }}
+        <tr class="table-row">
+          <td class="table-cell">
+            <a class="link" href="/">{{ .Name }}</a>
+          </td>
+          <td>
+            <div class="table-cell">
+              {{ .ModTime }}
+            </div>
+          </td>
+          <td>
+            <div class="table-cell">
+              {{ .ModTime }}
+            </div>
+          </td>
+        </tr>
+        {{ end }}
+      </tobdy>
+    </table>
+  </main>
+</body>
+</html>
