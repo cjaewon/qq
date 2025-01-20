@@ -13,8 +13,11 @@
       <tobdy>
         <tr class="table-row">
           <td class="table-navigation" colspan="3">
-            {{ range .Path }}
-              <a class="link" href="/{{ . }}">{{ . }}</a>
+            {{ range $i, $e := .Paths }}
+              {{ if ne $i 0 }}
+                /
+              {{ end }}
+              <a class="link" href="/{{ .FullPath }}">{{ $e.Name }}</a>
             {{ end }}
           </td>
         </tr>

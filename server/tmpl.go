@@ -20,8 +20,13 @@ func init() {
 	dirTmpl = template.Must(template.New("dir-tmpl").Parse(string(b)))
 }
 
+type PathInfo struct {
+	Name     string
+	FullPath string
+}
+
 type DirTmplContext struct {
-	Path  []string
+	Paths []PathInfo
 	Files []fs.FileInfo
 }
 

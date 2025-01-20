@@ -59,14 +59,19 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 
 	if stat.IsDir() {
 		entries, err := os.ReadDir(p)
-
 		if err != nil {
 			fmt.Print(err)
 			return
 		}
 
-		d := DirTmplContext{
-			Path: strings.Split(p, string(os.PathSeparator)),
+		d := DirTmplContext{}
+		paths := strings.Split(p, string(os.PathSeparator))
+
+		for i, name := range paths {
+			d.Paths = append(d.Paths, PathInfo{
+				Name:     name,
+				FullPath: strings.Join(paths[:i+1], "/"),
+			})
 		}
 
 		for _, entry := range entries {
@@ -79,7 +84,6 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 			d.Files = append(d.Files, f)
 		}
 
-		fmt.Println(d)
 		d.Write(w)
 	} else {
 		// file
