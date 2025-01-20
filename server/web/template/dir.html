@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
-  <link rel="stylesheet" href="/JjgVf8b1FVbEuyD2aqnewz3I6z-i8bePpdRwfCF6wi1Puz3vSYqsfNlH9XnHX7tXBomLwpISWT0/web/static/styles/common.css">
-  <link rel="stylesheet" href="/JjgVf8b1FVbEuyD2aqnewz3I6z-i8bePpdRwfCF6wi1Puz3vSYqsfNlH9XnHX7tXBomLwpISWT0/web/static/styles/dir.css">
+  <link rel="stylesheet" href="/JjgVf8b1FVbEuyD2aqnewz3I6z-i8bePpdRwfCF6wi1Puz3vSYqsfNlH9XnHX7tXBomLwpISWT0/styles/common.css">
+  <link rel="stylesheet" href="/JjgVf8b1FVbEuyD2aqnewz3I6z-i8bePpdRwfCF6wi1Puz3vSYqsfNlH9XnHX7tXBomLwpISWT0/styles/dir.css">
 </head>
 <body>
   <main class="table-container">
@@ -13,7 +13,9 @@
       <tobdy>
         <tr class="table-row">
           <td class="table-navigation" colspan="3">
-            cmd / html / Desktop
+            {{ range .Path }}
+              <a class="link" href="/{{ . }}">{{ . }}</a>
+            {{ end }}
           </td>
         </tr>
         <tr class="table-row">
@@ -21,7 +23,7 @@
           <th scope="col" class="table-cell">설명</th>
           <th scope="col" class="table-cell">날짜</th>
         </tr>
-        {{ range . }}
+        {{ range .Files }}
         <tr class="table-row">
           <td class="table-cell">
             <a class="link" href="/">{{ .Name }}</a>

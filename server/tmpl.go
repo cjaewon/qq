@@ -1,7 +1,6 @@
 package server
 
 import (
-	"embed"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -9,15 +8,11 @@ import (
 )
 
 var (
-	//go:embed web
-	web embed.FS
-
 	dirTmpl *template.Template
 )
 
 func init() {
-
-	b, err := web.ReadFile("web/html/dir.html")
+	b, err := fs.ReadFile(tmplFS, "dir.html")
 	if err != nil {
 		panic(err)
 	}
@@ -25,8 +20,13 @@ func init() {
 	dirTmpl = template.Must(template.New("dir-tmpl").Parse(string(b)))
 }
 
-func writeDirHTML(w http.ResponseWriter, files []fs.FileInfo) {
-	if err := dirTmpl.Execute(w, files); err != nil {
+type DirTmplContext struct {
+	Path  []string
+	Files []fs.FileInfo
+}
+
+func (d *DirTmplContext) Write(w http.ResponseWriter) {
+	if err := dirTmpl.Execute(w, d); err != nil {
 		fmt.Println(err)
 	}
 }

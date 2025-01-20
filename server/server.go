@@ -1,6 +1,7 @@
 package server
 
 import (
+	"embed"
 	"fmt"
 	"io/fs"
 	"net/http"
@@ -16,6 +17,27 @@ const (
 	// so systemToken injects a token, resulting in URLs like localhost:1234/[token]/styles/common.css
 	systemToken = "JjgVf8b1FVbEuyD2aqnewz3I6z-i8bePpdRwfCF6wi1Puz3vSYqsfNlH9XnHX7tXBomLwpISWT0"
 )
+
+var (
+	//go:embed web
+	web      embed.FS
+	tmplFS   fs.FS
+	staticFS fs.FS
+)
+
+func init() {
+	var err error
+
+	tmplFS, err = fs.Sub(web, "web/template")
+	if err != nil {
+		panic(err)
+	}
+
+	staticFS, err = fs.Sub(web, "web/static")
+	if err != nil {
+		panic(err)
+	}
+}
 
 type Server struct {
 	Port            int
@@ -43,7 +65,9 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var files []fs.FileInfo
+		d := DirTmplContext{
+			Path: strings.Split(p, string(os.PathSeparator)),
+		}
 
 		for _, entry := range entries {
 			f, err := entry.Info()
@@ -52,10 +76,11 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			files = append(files, f)
+			d.Files = append(d.Files, f)
 		}
 
-		writeDirHTML(w, files)
+		fmt.Println(d)
+		d.Write(w)
 	} else {
 		// file
 		fmt.Fprintf(w, "%s is file", r.URL.Path)
@@ -65,7 +90,7 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) Start() error {
 	http.HandleFunc("/", s.handler)
-	http.Handle("/"+systemToken+"/", http.StripPrefix("/"+systemToken+"/", http.FileServer(http.FS(web))))
+	http.Handle("/"+systemToken+"/", http.StripPrefix("/"+systemToken+"/", http.FileServer(http.FS(staticFS))))
 
 	fmt.Println("http server started on :" + strconv.Itoa(s.Port))
 
