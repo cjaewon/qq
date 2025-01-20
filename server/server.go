@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -40,9 +41,10 @@ func init() {
 }
 
 type Server struct {
-	Port            int
-	Watch           bool
-	ContentRootPath string
+	Port               int
+	Watch              bool
+	ContentRootPath    string
+	ContentRootDirName string
 }
 
 func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
@@ -50,38 +52,71 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := filepath.Join(s.ContentRootPath, r.URL.Path)
-	stat, err := os.Stat(p)
+	// contentPath is ContentRootPath + r.URL.PathrelativePath)
+	contentPath := filepath.Join(s.ContentRootPath, r.URL.Path)
+	stat, err := os.Stat(contentPath)
 	if err != nil {
 		fmt.Print(err)
 		return
 	}
 
 	if stat.IsDir() {
-		entries, err := os.ReadDir(p)
+		entries, err := os.ReadDir(contentPath)
 		if err != nil {
 			fmt.Print(err)
 			return
 		}
 
 		d := DirTmplContext{}
-		paths := strings.Split(p, string(os.PathSeparator))
 
-		for i, name := range paths {
+		// Add root path
+		d.Paths = append(d.Paths, PathInfo{
+			Name:     s.ContentRootDirName,
+			FullPath: "/",
+		})
+
+		// relativePath is the relative path based on the ContentRootPath.
+		// dir-root(ContentRootPath)
+		// - dir1
+		//   - dir2
+		// than relativePath is dir1/dir2
+		relativePath, _ := strings.CutPrefix(r.URL.Path, "/")
+
+		// if r.URL.Path == "/" than relativePaths == [] so for is not working
+		relativePaths := strings.Split(relativePath, "/")
+
+		for i, name := range relativePaths {
+			fullpath, err := url.JoinPath("/", strings.Join(relativePaths[:i], "/"), name)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
 			d.Paths = append(d.Paths, PathInfo{
 				Name:     name,
-				FullPath: strings.Join(paths[:i+1], "/"),
+				FullPath: fullpath,
 			})
 		}
 
 		for _, entry := range entries {
 			f, err := entry.Info()
 			if err != nil {
-				fmt.Print(err)
+				fmt.Println(err)
 				return
 			}
 
-			d.Files = append(d.Files, f)
+			fullpath, err := url.JoinPath("/", r.URL.Path, entry.Name())
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			d.Files = append(d.Files, FileInfo{
+				Name:     f.Name(),
+				Date:     f.ModTime(),
+				IsDir:    f.IsDir(),
+				FullPath: fullpath,
+			})
 		}
 
 		d.Write(w)

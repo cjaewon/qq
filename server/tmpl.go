@@ -5,7 +5,26 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"time"
 )
+
+type PathInfo struct {
+	Name     string
+	FullPath string
+}
+
+type FileInfo struct {
+	Name        string
+	FullPath    string
+	Description string
+	IsDir       bool
+	Date        time.Time
+}
+
+type DirTmplContext struct {
+	Paths []PathInfo
+	Files []FileInfo
+}
 
 var (
 	dirTmpl *template.Template
@@ -18,16 +37,6 @@ func init() {
 	}
 
 	dirTmpl = template.Must(template.New("dir-tmpl").Parse(string(b)))
-}
-
-type PathInfo struct {
-	Name     string
-	FullPath string
-}
-
-type DirTmplContext struct {
-	Paths []PathInfo
-	Files []fs.FileInfo
 }
 
 func (d *DirTmplContext) Write(w http.ResponseWriter) {

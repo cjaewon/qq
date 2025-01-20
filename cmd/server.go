@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"errors"
+	"fmt"
+	"os"
+
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/cjaewon/qq/server"
 	"github.com/spf13/cobra"
@@ -20,14 +24,24 @@ var (
 		RunE: func(cmd *cobra.Command, args []string) error {
 			contentRootPath := "."
 
-			if len(args) > 1 {
+			if len(args) >= 1 {
 				contentRootPath = args[0]
 			}
 
+			f, err := os.Stat(contentRootPath)
+			if err != nil {
+				return err
+			}
+
+			if !f.IsDir() {
+				return errors.New(fmt.Sprintf("Error: %s is not directory", contentRootPath))
+			}
+
 			s := server.Server{
-				Port:            serverPort,
-				Watch:           serverWatch,
-				ContentRootPath: contentRootPath,
+				Port:               serverPort,
+				Watch:              serverWatch,
+				ContentRootPath:    contentRootPath,
+				ContentRootDirName: f.Name(),
 			}
 
 			return s.Start()

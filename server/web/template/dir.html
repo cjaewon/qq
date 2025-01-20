@@ -17,28 +17,28 @@
               {{ if ne $i 0 }}
                 /
               {{ end }}
-              <a class="link" href="/{{ .FullPath }}">{{ $e.Name }}</a>
+              <a class="link" href="{{ .FullPath }}">{{ $e.Name }}</a>
             {{ end }}
           </td>
         </tr>
         <tr class="table-row">
-          <th scope="col" class="table-cell">이름</th>
-          <th scope="col" class="table-cell">설명</th>
-          <th scope="col" class="table-cell">날짜</th>
+          <th scope="col" class="table-cell" width="30%">이름</th>
+          <th scope="col" class="table-cell" width="45%">설명</th>
+          <th scope="col" class="table-cell" width="25%">날짜</th>
         </tr>
         {{ range .Files }}
           <tr class="table-row">
             <td class="table-cell">
-              <a class="link" href="javascript:window.location.href=window.location.href+'/{{ .Name }}'">{{ .Name }}</a>
+              <a class="link" href="{{ .FullPath }}">{{ .Name }}</a>
             </td>
             <td>
               <div class="table-cell">
-                {{ .ModTime }}
+                {{ .Description }}
               </div>
             </td>
             <td>
               <div class="table-cell">
-                {{ .ModTime }}
+                {{ .Date.Format "2006/01/02 15:4" }}
               </div>
             </td>
           </tr>
