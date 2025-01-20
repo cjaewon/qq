@@ -27,21 +27,21 @@
           <th scope="col" class="table-cell">날짜</th>
         </tr>
         {{ range .Files }}
-        <tr class="table-row">
-          <td class="table-cell">
-            <a class="link" href="/">{{ .Name }}</a>
-          </td>
-          <td>
-            <div class="table-cell">
-              {{ .ModTime }}
-            </div>
-          </td>
-          <td>
-            <div class="table-cell">
-              {{ .ModTime }}
-            </div>
-          </td>
-        </tr>
+          <tr class="table-row">
+            <td class="table-cell">
+              <a class="link" href="javascript:window.location.href=window.location.href+'/{{ .Name }}'">{{ .Name }}</a>
+            </td>
+            <td>
+              <div class="table-cell">
+                {{ .ModTime }}
+              </div>
+            </td>
+            <td>
+              <div class="table-cell">
+                {{ .ModTime }}
+              </div>
+            </td>
+          </tr>
         {{ end }}
       </tobdy>
     </table>
