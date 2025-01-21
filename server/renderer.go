@@ -9,6 +9,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/h2non/filetype"
 	"github.com/yuin/goldmark"
+	meta "github.com/yuin/goldmark-meta"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
@@ -62,21 +63,25 @@ func imgRender(relativePath string) template.HTML {
 }
 
 var md = goldmark.New(
-	goldmark.WithExtensions(extension.GFM),
+	goldmark.WithExtensions(
+		extension.GFM,
+		extension.CJK,
+		meta.New(meta.WithTable()),
+	),
+
 	goldmark.WithParserOptions(
 		parser.WithAutoHeadingID(),
 	),
 	goldmark.WithRendererOptions(
 		html.WithHardWraps(),
-		html.WithXHTML(),
 	),
 )
 
 func markdownRender(source []byte) (template.HTML, error) {
 	var buf bytes.Buffer
-	if err := md.Convert(source, &buf); err != nil {
-		return "", err
-	}
 
+	if err := md.Convert(source, &buf); err != nil {
+		panic(err)
+	}
 	return template.HTML(buf.Bytes()), nil
 }
