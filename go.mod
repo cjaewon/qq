@@ -4,7 +4,9 @@ go 1.23.4
 
 require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
+	github.com/h2non/filetype v1.1.3
 	github.com/spf13/cobra v1.8.1
+	github.com/yuin/goldmark v1.7.8
 )
 
 require (

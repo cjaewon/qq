@@ -17,6 +17,10 @@ const (
 	// localhost:1234/styles/common.css might conflict with the user's files,
 	// so systemToken injects a token, resulting in URLs like localhost:1234/[token]/styles/common.css
 	systemToken = "JjgVf8b1FVbEuyD2aqnewz3I6z-i8bePpdRwfCF6wi1Puz3vSYqsfNlH9XnHX7tXBomLwpISWT0"
+
+	// staticToken is a token used for serving static file (video, images, pdf)
+	// not for serving web/static, serving for user's file
+	staticToken = "MFMEVmXenkenmEkTMemoMywoekQpeLmhretiowktoQETR-qetMlqemltMqjJyeoKypElqQykpq3"
 )
 
 var (
@@ -48,7 +52,7 @@ type Server struct {
 }
 
 func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
-	if strings.HasPrefix(r.URL.Path, "/"+systemToken) {
+	if strings.HasPrefix(r.URL.Path, "/"+systemToken) || strings.HasPrefix(r.URL.Path, "/"+staticToken) {
 		return
 	}
 
@@ -67,7 +71,9 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		d := DirTmplContext{}
+		d := DirTmplContext{
+			SystemToken: systemToken,
+		}
 
 		// Add root path
 		d.Paths = append(d.Paths, PathInfo{
@@ -122,14 +128,55 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 		d.Write(w)
 	} else {
 		// file
-		fmt.Fprintf(w, "%s is file", r.URL.Path)
+		f := FileTmplContext{
+			SystemToken: systemToken,
+		}
+
+		// Add root path
+		f.Paths = append(f.Paths, PathInfo{
+			Name:     s.ContentRootDirName,
+			FullPath: "/",
+		})
+
+		// relativePath is the relative path based on the ContentRootPath.
+		// dir-root(ContentRootPath)
+		// - dir1
+		//   - dir2
+		// than relativePath is dir1/dir2
+		relativePath, _ := strings.CutPrefix(r.URL.Path, "/")
+
+		// if r.URL.Path == "/" than relativePaths == [] so for is not working
+		relativePaths := strings.Split(relativePath, "/")
+
+		for i, name := range relativePaths {
+			fullpath, err := url.JoinPath("/", strings.Join(relativePaths[:i], "/"), name)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			f.Paths = append(f.Paths, PathInfo{
+				Name:     name,
+				FullPath: fullpath,
+			})
+		}
+
+		f.HTML, err = Render(contentPath, relativePath)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		f.Write(w)
 	}
 
 }
 
 func (s *Server) Start() error {
 	http.HandleFunc("/", s.handler)
+
 	http.Handle("/"+systemToken+"/", http.StripPrefix("/"+systemToken+"/", http.FileServer(http.FS(staticFS))))
+	http.Handle("/"+staticToken+"/", http.StripPrefix("/"+staticToken+"/", http.FileServer(http.Dir(s.ContentRootPath))))
 
 	fmt.Println("http server started on :" + strconv.Itoa(s.Port))
 

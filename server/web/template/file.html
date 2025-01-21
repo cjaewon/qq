@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/{{ .SystemToken }}/styles/common.css">
+  <link rel="stylesheet" href="/{{ .SystemToken }}/styles/file.css">
+</head>
+<body>
+  <main class="container">
+    <div class="content">
+      <div class="navigation">
+        {{ range $i, $e := .Paths }}
+          {{ if ne $i 0 }}
+            /
+          {{ end }}
+          <a class="link" href="{{ .FullPath }}">{{ $e.Name }}</a>
+        {{ end }}
+      </div>
+      <div class="render">
+        {{ .HTML }}
+      </div>
+    </div>
+  </main>
+</body>
+</html>
