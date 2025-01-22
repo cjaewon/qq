@@ -7,8 +7,13 @@ import (
 	"path/filepath"
 
 	"github.com/MakeNowJust/heredoc/v2"
+	"github.com/alecthomas/chroma/v2"
+	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
+	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/alecthomas/chroma/v2/quick"
 	"github.com/h2non/filetype"
 	"github.com/yuin/goldmark"
+	highlighting "github.com/yuin/goldmark-highlighting/v2"
 	meta "github.com/yuin/goldmark-meta"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
@@ -50,6 +55,12 @@ func Render(contentPath, relativePath string) (template.HTML, error) {
 	switch ext {
 	case ".markdown", ".md":
 		return markdownRender(b)
+	}
+
+	lex := lexers.Match(filepath.Base(relativePath))
+	if lex != nil {
+		return codeRender(b, lex)
+		// lex pointer check
 	}
 
 	return notSupportRender(relativePath), nil
@@ -99,6 +110,13 @@ var md = goldmark.New(
 		// todo: 코드 하이라이팅
 		// todo: 테이블에 class injection해서 css 적용 수정하기
 		// todo: 이미지 url에 특정 staticToken 추가하기
+		highlighting.NewHighlighting(
+			highlighting.WithStyle("emacs"),
+			highlighting.WithFormatOptions(
+				chromahtml.WithLineNumbers(true),
+				chromahtml.WithClasses(true),
+			),
+		),
 	),
 
 	goldmark.WithParserOptions(
@@ -117,6 +135,21 @@ func markdownRender(source []byte) (template.HTML, error) {
 			%s
 		</div>
 	`, buf.Bytes())), nil
+}
+
+func codeRender(source []byte, lex chroma.Lexer) (template.HTML, error) {
+	var buf bytes.Buffer
+
+	if err := quick.Highlight(&buf, string(source), lex.Config().Name, "html", "emacs"); err != nil {
+		return "", err
+	}
+
+	// todo: background color
+	return template.HTML(heredoc.Docf(`
+		<div class="code-filetype-container">
+			%s
+		</div>
+	`, buf.String())), nil
 }
 
 func notSupportRender(relativePath string) template.HTML {

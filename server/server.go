@@ -38,7 +38,6 @@ func init() {
 		panic(err)
 	}
 
-	// todo: static->assets change naming
 	assetsFS, err = fs.Sub(web, "web/assets")
 	if err != nil {
 		panic(err)
