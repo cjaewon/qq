@@ -27,7 +27,7 @@ var (
 	//go:embed web
 	web      embed.FS
 	tmplFS   fs.FS
-	staticFS fs.FS
+	assetsFS fs.FS
 )
 
 func init() {
@@ -38,7 +38,8 @@ func init() {
 		panic(err)
 	}
 
-	staticFS, err = fs.Sub(web, "web/static")
+	// todo: static->assets change naming
+	assetsFS, err = fs.Sub(web, "web/assets")
 	if err != nil {
 		panic(err)
 	}
@@ -52,12 +53,23 @@ type Server struct {
 }
 
 func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
+	// todo: study golang http
 	if strings.HasPrefix(r.URL.Path, "/"+systemToken) || strings.HasPrefix(r.URL.Path, "/"+staticToken) {
 		return
 	}
 
-	// contentPath is ContentRootPath + r.URL.PathrelativePath)
-	contentPath := filepath.Join(s.ContentRootPath, r.URL.Path)
+	// relativePath is the relative path based on the ContentRootPath.
+	// dir-root(ContentRootPath)
+	// - dir1
+	//   - dir2
+	// than relativePath is dir1/dir2
+	relativePath, _ := strings.CutPrefix(r.URL.Path, "/")
+
+	// if r.URL.Path == "/" than relativePaths == [] so for is not working
+	relativePaths := strings.Split(relativePath, "/")
+
+	// contentPath is ContentRootPath + r.URL.Path(relativePath)
+	contentPath := filepath.Join(s.ContentRootPath, relativePath)
 	stat, err := os.Stat(contentPath)
 	if err != nil {
 		fmt.Print(err)
@@ -67,7 +79,7 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	if stat.IsDir() {
 		entries, err := os.ReadDir(contentPath)
 		if err != nil {
-			fmt.Print(err)
+			fmt.Println(err)
 			return
 		}
 
@@ -80,16 +92,6 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 			Name:     s.ContentRootDirName,
 			FullPath: "/",
 		})
-
-		// relativePath is the relative path based on the ContentRootPath.
-		// dir-root(ContentRootPath)
-		// - dir1
-		//   - dir2
-		// than relativePath is dir1/dir2
-		relativePath, _ := strings.CutPrefix(r.URL.Path, "/")
-
-		// if r.URL.Path == "/" than relativePaths == [] so for is not working
-		relativePaths := strings.Split(relativePath, "/")
 
 		for i, name := range relativePaths {
 			fullpath, err := url.JoinPath("/", strings.Join(relativePaths[:i], "/"), name)
@@ -138,16 +140,6 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 			FullPath: "/",
 		})
 
-		// relativePath is the relative path based on the ContentRootPath.
-		// dir-root(ContentRootPath)
-		// - dir1
-		//   - dir2
-		// than relativePath is dir1/dir2
-		relativePath, _ := strings.CutPrefix(r.URL.Path, "/")
-
-		// if r.URL.Path == "/" than relativePaths == [] so for is not working
-		relativePaths := strings.Split(relativePath, "/")
-
 		for i, name := range relativePaths {
 			fullpath, err := url.JoinPath("/", strings.Join(relativePaths[:i], "/"), name)
 			if err != nil {
@@ -175,7 +167,7 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) Start() error {
 	http.HandleFunc("/", s.handler)
 
-	http.Handle("/"+systemToken+"/", http.StripPrefix("/"+systemToken+"/", http.FileServer(http.FS(staticFS))))
+	http.Handle("/"+systemToken+"/", http.StripPrefix("/"+systemToken+"/", http.FileServer(http.FS(assetsFS))))
 	http.Handle("/"+staticToken+"/", http.StripPrefix("/"+staticToken+"/", http.FileServer(http.Dir(s.ContentRootPath))))
 
 	fmt.Println("http server started on :" + strconv.Itoa(s.Port))

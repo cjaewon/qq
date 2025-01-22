@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
@@ -34,7 +33,7 @@ var (
 			}
 
 			if !f.IsDir() {
-				return errors.New(fmt.Sprintf("Error: %s is not directory", contentRootPath))
+				return fmt.Errorf("error: %s is not directory", contentRootPath)
 			}
 
 			s := server.Server{
