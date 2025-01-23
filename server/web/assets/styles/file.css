@@ -12,10 +12,6 @@
 
 .markdown-filetype-container {
   padding: 1rem 1.25rem 1rem 1.25rem;
-
-  img {
-    width: 100%;
-  }
 }
 
 .markdown-filetype-container img {
@@ -85,7 +81,16 @@
   font-size: 1.25rem;
   padding: 0.5rem 1rem;
   overflow-x: scroll;
-  background-color: #f8f8f8;
+}
+
+.txt-filetype-container { 
+  font-size: 1.25rem;
+  color: #222426;
+  line-height: 1.6;
+  letter-spacing: -0.004em;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  padding: 1rem 1.25rem 1rem 1.25rem;
 }
 
 .notsupport-filetype-container {

@@ -55,6 +55,8 @@ func Render(contentPath, relativePath string) (template.HTML, error) {
 	switch ext {
 	case ".markdown", ".md":
 		return markdownRender(b)
+	case ".txt":
+		return txtRender(b), nil
 	}
 
 	lex := lexers.Match(filepath.Base(relativePath))
@@ -150,6 +152,14 @@ func codeRender(source []byte, lex chroma.Lexer) (template.HTML, error) {
 			%s
 		</div>
 	`, buf.String())), nil
+}
+
+func txtRender(source []byte) template.HTML {
+	return template.HTML(heredoc.Docf(`
+		<div class="txt-filetype-container">
+			%s
+		</div>
+	`, source))
 }
 
 func notSupportRender(relativePath string) template.HTML {
