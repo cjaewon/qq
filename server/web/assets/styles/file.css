@@ -26,21 +26,26 @@
   word-break: keep-all;
   overflow-wrap: break-word;
 }
+
 .markdown-filetype-container h1 {
   line-height: 1.5;
   margin-bottom: 1rem;
   font-size: 2.5rem;
 }
+
 .markdown-filetype-container h2 {
   font-size: 2rem;
 }
+
 .markdown-filetype-container h3 {
   font-size: 1.5rem;
 }
+
 .markdown-filetype-container h2, .markdown-filetype-container h3, .markdown-filetype-container h4 {
   line-height: 1.5;
   margin-bottom: 1rem;
 }
+
 .markdown-filetype-container hr {
   border: none;
   height: 1px;

@@ -15,7 +15,7 @@ body {
   border-width: 1px;
   border-style: solid;
   border-color: #d1d9e0;
-  margin-top: 1.25rem;
+  margin: 1.25rem 0;
 }
 
 .navigation {

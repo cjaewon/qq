@@ -10,7 +10,7 @@ import (
 	"github.com/alecthomas/chroma/v2"
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/alecthomas/chroma/v2/lexers"
-	"github.com/alecthomas/chroma/v2/quick"
+	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/h2non/filetype"
 	"github.com/yuin/goldmark"
 	highlighting "github.com/yuin/goldmark-highlighting/v2"
@@ -62,7 +62,6 @@ func Render(contentPath, relativePath string) (template.HTML, error) {
 	lex := lexers.Match(filepath.Base(relativePath))
 	if lex != nil {
 		return codeRender(b, lex)
-		// lex pointer check
 	}
 
 	return notSupportRender(relativePath), nil
@@ -109,18 +108,15 @@ var md = goldmark.New(
 		extension.GFM,
 		extension.CJK,
 		meta.New(meta.WithTable()),
-		// todo: 코드 하이라이팅
-		// todo: 테이블에 class injection해서 css 적용 수정하기
 		// todo: 이미지 url에 특정 staticToken 추가하기
 		highlighting.NewHighlighting(
-			highlighting.WithStyle("emacs"),
+			highlighting.WithStyle("github"),
 			highlighting.WithFormatOptions(
 				chromahtml.WithLineNumbers(true),
 				chromahtml.WithClasses(true),
 			),
 		),
 	),
-
 	goldmark.WithParserOptions(
 		parser.WithAutoHeadingID(),
 	),
@@ -139,19 +135,40 @@ func markdownRender(source []byte) (template.HTML, error) {
 	`, buf.Bytes())), nil
 }
 
+// todo: table 999px
 func codeRender(source []byte, lex chroma.Lexer) (template.HTML, error) {
-	var buf bytes.Buffer
+	var contentBuf bytes.Buffer
+	var stylesBuf bytes.Buffer
 
-	if err := quick.Highlight(&buf, string(source), lex.Config().Name, "html", "emacs"); err != nil {
+	style := styles.GitHub
+
+	formatter := chromahtml.New(
+		chromahtml.WithLineNumbers(true),
+		chromahtml.WithClasses(true),
+	)
+
+	if err := formatter.WriteCSS(&stylesBuf, style); err != nil {
+		return "", err
+	}
+
+	iterator, err := lex.Tokenise(nil, string(source))
+	if err != nil {
+		return "", err
+	}
+
+	if err := formatter.Format(&contentBuf, style, iterator); err != nil {
 		return "", err
 	}
 
 	// todo: background color
 	return template.HTML(heredoc.Docf(`
 		<div class="code-filetype-container">
+			<style>
+			%s
+			</style>
 			%s
 		</div>
-	`, buf.String())), nil
+	`, stylesBuf.String(), contentBuf.String())), nil
 }
 
 func txtRender(source []byte) template.HTML {
